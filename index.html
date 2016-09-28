@@ -131,6 +131,7 @@ var cells = new Array(MAX_PAGES * CELLS_PER_PAGE);
 */
 var current_mode = 0;
 /* how many page generated, user can choose between 1-MAX_PAGES */
+var old_total_pages = 0;
 var total_pages = 0;
 
 function print_issue(issue, show_answer)
@@ -198,6 +199,16 @@ function show_issues()
 			}
     		}
 	}
+
+	if (old_total_pages > total_pages) {
+		var d = document.getElementById("tabdiv");
+		for (p = old_total_pages - 1; p >= total_pages; p --) {
+			tab = document.getElementById("mytab" + p);
+			if (tab) 
+				d.removeChild(tab);
+		}
+	}
+	old_total_pages = total_pages;
 }
 
 function generate_mode1()
@@ -278,6 +289,8 @@ function generate()
 		alert("Invalid page copies!" + pages);
 		return;
 	}
+
+	old_total_pages = total_pages;
 	total_pages = pages;
 
 	if (current_mode == 0) 
