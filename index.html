@@ -1,0 +1,438 @@
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <style>
+       body,h2{margin:0;}
+       body,input,select{font-size:12px;font-family:"宋体",tahoma,arial;}
+
+       h2{width:500px;height:50px;margin:0 0;color:red;border:1px solid gray;}
+       h2  span{width:249px;height:50px;line-height:50px;text-align:center;float:left;}
+
+       ul li { float: left; width: 200px; font-size:12px; margin:0 0; padding: 0; height: 20px; list-style-type: none;}
+
+       #tab  .tab{color:yellow;background-color:#999;}
+       #ct  div{width:500px;height:100px;margin:0 0;border:1px solid blue;display:none;}
+       #ct  .ct{display:block; float:center;}
+       #act  div{width:500px;height:30px;margin:0 0;border:1px solid blue;display:none;}
+       #act  .act{display:block; float:center;}
+
+       table{ table-layout:fixed; width:720px; empty-cells:show; margin:auto auto; page-break-after:always;} 
+       td{ height:80px; text-align:"center"; align:"center"; } 
+    </style>
+</head>
+<body>
+<script type="text/javascript" src="js/jquery.min.js"></script>
+<script type="text/javascript" src="js/jQuery.print.js"></script>                
+<!-- 
+<script type="text/javascript" src="js/jquery.base64.js"></script>                
+<script type="text/javascript" src="js/tableExport.js"></script>                
+-->
+<script type="text/javascript">
+
+/* Generate integer that in [m,n], if m > n return 0 */
+function rand(m,n)
+{
+	if (m > n) 
+		return 0;
+    	else
+		return Math.round(Math.random() * (n - m) + m);
+}
+
+/* randomly generate one issue of give type */
+function generate_issue(type)
+{
+	var i, j;
+
+	var issue = new Object();
+
+	switch (type) {
+        case 'addc_2_2': 
+		i = rand(1,7);
+		j = rand(1,9);
+		issue.op1 = i * 10 + j;
+		issue.op = '+';
+		issue.op2 = rand(1,8 - i) * 10 + rand(10 - j, 9);
+		issue.result = issue.op1 + issue.op2;
+		break;
+	case 'add_2_2':
+		i = rand(1,8);
+		j = rand(0,9);
+		issue.op1 = i * 10 + j;
+		issue.op = '+';
+		issue.op2 = rand(1, 9 - i) * 10 + rand(0, 9-j);
+		issue.result = issue.op1 + issue.op2;
+		break;
+	case 'subc_2_2':
+		i = rand(2,9);
+		j = rand(0,8);
+		issue.op1 = i * 10 + j;
+		issue.op = '-';
+		issue.op2 = rand(1, i - 1) * 10 + rand(j+1, 9);
+		issue.result = issue.op1 - issue.op2;
+		break;
+	case 'sub_2_2':
+		i = rand(1,9);
+		j = rand(0,9);
+		issue.op1 = i * 10 + j;
+		issue.op = '-';
+		issue.op2 = rand(1,i) * 10 + rand(0,j);
+		issue.result = issue.op1 - issue.op2;
+		break;
+        case 'add_2_1': 
+		i = rand(1,9);
+		j = rand(0,9);
+		issue.op1 = i * 10 + j;
+		issue.op = '+';
+		issue.op2 = (i < 9) ? rand(0,9) : rand(0, 9 - j);
+		issue.result = issue.op1 + issue.op2;
+		break;
+        case 'add_1_2': 
+		i = rand(1,9);
+		j = rand(1,9);
+		issue.op1 = i;
+		issue.op = '+';
+		issue.op2 = (j == 9) ? j*10 + rand(0,9 - i) : j * 10 + rand(0, 9);
+		issue.result = issue.op1 + issue.op2;
+		break;
+        case 'sub_2_1': 
+		i = rand(1,9);
+		j = rand(0,9);
+		issue.op1 = i*10 + j;
+		issue.op = '-';
+		issue.op2 = rand(0,9);
+		issue.result = issue.op1 - issue.op2;
+		break;
+	default:
+		alert("unknown type=" + type);
+	} 
+
+	return issue;
+}
+
+/* genrate n issues of given type */
+function generate_issues(type, n)
+{
+	var issues = new Array(n);
+
+	for (var i = 0; i < n; i ++) 
+          issues[i] = generate_issue(type);
+
+	return issues;
+}
+
+/* store all generated issues. Maximum pages * cells per page/table */
+var MAX_PAGES = 20;
+var CELLS_PER_PAGE = 50;
+var cells = new Array(MAX_PAGES * CELLS_PER_PAGE);
+
+/* which op mode we are in:
+   0: specify type for each column
+   1: specify quantity of each type then mix
+*/
+var current_mode = 0;
+/* how many page generated, user can choose between 1-MAX_PAGES */
+var total_pages = 0;
+
+function print_issue(issue, show_answer)
+{
+	var s = '<center><pre>' + ((issue.op1 < 10) ? ' ':'');
+        s += issue.op1;
+        s += ' ' +  issue.op + ' ';
+        s += ((issue.op2 < 10) ? ' ':'');
+        s += issue.op2;
+        s += ' = ';
+	if (show_answer) 
+		s += issue.result;
+	s += '</pre></center>'
+	return s;
+}
+
+function create_table(p)
+{
+	var tab;
+	
+	tab = document.createElement("table");
+	tab.innerHTML = '<table class="table" align="center">';
+	tab.setAttribute("id", "mytab" + p);
+	for (var r=0; r < 12; r++) {
+		tr = tab.insertRow(r);
+		if (r == 0) { 
+			tr.innerHTML = '<tr> <td align="center" colspan="5"> <h1> 口算练习题 </h1> </td> </tr>';
+		} else if ( r == 1) {
+			tr.innerHTML = ' <tr> <td></td> \
+					<td colspan="1" align="center">姓名：</td> \
+        				<td colspan="1" align="center">班级：</td> \
+ 			 	        <td colspan="1" align="center">时间：</td> \
+				        <td></td> </tr>';
+		} else {
+			for (var c = 0; c < 5; c++) {
+				tr.insertCell(c);	
+			}
+		}
+	}
+
+	var d = document.getElementById("tabdiv");
+	d.appendChild(tab);
+
+	return tab;
+}
+
+function show_issues() 
+{
+	var p, r, c;
+        var tab, tr, td;
+
+	var show_answer = document.getElementById("show_answer_cb").checked;
+
+	for (p = 0; p < total_pages; p++) {
+		tab = document.getElementById("mytab" + p);
+		if (!tab) {
+			tab = create_table(p);
+		}
+
+		for (r = 0; r < 10; r ++) {
+			tr = tab.rows[r + 2];
+			for (c = 0; c < 5; c ++) {
+				td = tr.cells[c];
+				td.innerHTML = print_issue(cells[p*CELLS_PER_PAGE + c*10 + r], show_answer);
+			}
+    		}
+	}
+}
+
+function generate_mode1()
+{
+	var cols = ["col1type", "col2type", "col3type", "col4type", "col5type"];
+	var mode, issues, i, j;
+
+	for (var p = 0; p < total_pages; p++) {
+		for (i = 0; i < 5; i ++ ) {
+			mode = document.getElementById(cols[i]).value;
+			issues = generate_issues(mode, 10);
+
+			for (j = 0; j < 10; j++) {
+				cells[p*CELLS_PER_PAGE + i*10 + j] = issues[j];
+			}
+		}
+	}
+
+	show_issues();
+}
+
+
+function generate_mode2()
+{
+	var i, j, k, p;
+	var mode;
+	var input;
+
+	var modes = ["addc_2_2", "add_2_2", "subc_2_2", "sub_2_2", "add_2_1", "add_1_2", "sub_2_1"];
+
+	var issues;
+	var current_cells = new Array(CELLS_PER_PAGE);
+
+	var n = new Array(modes.length);
+	var total = 0;
+
+	for (i = 0; i < modes.length; i++ ) {
+		input = document.getElementById(modes[i]);
+		if (input) 
+			n[i] = parseInt(input.value);
+		else
+			n[i] = 0;
+		total += n[i];
+    	}
+
+	if (total != 50) {
+		alert("总题数应该是50，现在是" + total);
+		return;
+	}
+
+	for (p = 0; p < total_pages; p++ ) {
+		k = 0;
+		for (i = 0; i < modes.length; i++ ) {
+			if (n[i] > 0) {
+				issues = generate_issues(modes[i], n[i]);
+				for (j = 0; j < n[i]; j++) {
+					current_cells[k] = issues[j]; 
+					k++;
+				}
+			}
+		}
+		// random sort
+		current_cells = current_cells.sort(function(a,b){ 
+				return Math.random()>.5 ? -1 : 1;});
+		// store in global array 
+		for (i = 0; i < CELLS_PER_PAGE; i++ ) 
+			cells[p * CELLS_PER_PAGE + i] = current_cells[i];
+	}
+
+	show_issues();
+}
+
+function generate()
+{
+	var pages = document.getElementById("pages").value;
+
+	if (isNaN(pages) || pages < 1 || pages > MAX_PAGES) {
+		alert("Invalid page copies!" + pages);
+		return;
+	}
+	total_pages = pages;
+
+	if (current_mode == 0) 
+		generate_mode1();
+	else
+		generate_mode2();
+
+}
+
+function changetab(){
+    var tabs=document.getElementById("tab").getElementsByTagName("span");
+    for (i=0;i<tabs.length;i++){
+        tabs[i].onclick=tab;
+    }
+}
+
+function tab(){
+    var tabs=document.getElementById("tab").getElementsByTagName("span");
+    var cts=document.getElementById("ct").getElementsByTagName("div");
+    for (i=0;i<tabs.length;i++){
+        tabs[i].className="";
+        cts[i].className="";
+        if (tabs[i]==this){
+            tabs[i].className="tab";
+            cts[i].className="ct";
+	    current_mode = i;
+        }
+    }
+}
+
+window.onload=function (){
+    changetab();
+    generate();
+}
+
+function printme()
+{
+	$("#tabdiv").print();
+}
+
+/*
+function saveasword()
+{
+	$("#mytab").tableExport({type:'doc',escape:'false'});
+}
+*/
+
+</script>
+
+
+    <center> <h2 id="tab">
+        <span  class="tab">按列选模式生成</span>
+        <span>按模式数量混合生成</span>
+    </h2></center>
+
+    <div id="ct" align="center">
+        <div class="ct">
+          <ul>
+            <li>
+            第1列: <select id="col1type">
+                   <option value="addc_2_2"> 两位数进位加法 </option>
+                   <option value="add_2_2"> 两位数不进位加 </option>
+                   <option value="subc_2_2"> 两位数退位减法 </option>
+                   <option value="sub_2_2"> 两位数不退位减 </option>
+                   <option value="add_1_2"> 一位数加两位数 </option>
+                   <option value="add_2_1"> 两位数加一位数 </option>
+                   <option value="sub_2_1"> 两位数减一位数 </option>
+                   </select>
+            </li>
+            <li>
+            第2列: <select id="col2type">
+                   <option value="addc_2_2"> 两位数进位加法 </option>
+                   <option value="add_2_2"> 两位数不进位加 </option>
+                   <option value="subc_2_2"> 两位数退位减法 </option>
+                   <option value="sub_2_2"> 两位数不退位减 </option>
+                   <option value="add_1_2"> 一位数加两位数 </option>
+                   <option value="add_2_1"> 两位数加一位数 </option>
+                   <option value="sub_2_1"> 两位数减一位数 </option>
+                   </select>
+            </li>
+            <li>
+            第3列: <select id="col3type">
+                   <option value="addc_2_2"> 两位数进位加法 </option>
+                   <option value="add_2_2"> 两位数不进位加 </option>
+                   <option value="subc_2_2"> 两位数退位减法 </option>
+                   <option value="sub_2_2"> 两位数不退位减 </option>
+                   <option value="add_1_2"> 一位数加两位数 </option>
+                   <option value="add_2_1"> 两位数加一位数 </option>
+                   <option value="sub_2_1"> 两位数减一位数 </option>
+                   </select>
+            </li>
+            <li>
+            第4列: <select id="col4type">
+                   <option value="addc_2_2"> 两位数进位加法 </option>
+                   <option value="add_2_2"> 两位数不进位加 </option>
+                   <option value="subc_2_2"> 两位数退位减法 </option>
+                   <option value="sub_2_2"> 两位数不退位减 </option>
+                   <option value="add_1_2"> 一位数加两位数 </option>
+                   <option value="add_2_1"> 两位数加一位数 </option>
+                   <option value="sub_2_1"> 两位数减一位数 </option>
+                   </select>
+            </li>
+            <li>
+            第5列: <select id="col5type">
+                   <option value="addc_2_2"> 两位数进位加法 </option>
+                   <option value="add_2_2"> 两位数不进位加 </option>
+                   <option value="subc_2_2"> 两位数退位减法 </option>
+                   <option value="sub_2_2"> 两位数不退位减 </option>
+                   <option value="add_1_2"> 一位数加两位数 </option>
+                   <option value="add_2_1"> 两位数加一位数 </option>
+                   <option value="sub_2_1"> 两位数减一位数 </option>
+                   </select>
+            </li>
+            </ul>
+        </div>
+        <div>
+	    <ul>
+            <li>
+            两位数进位加法<input id="addc_2_2" type="text" value="20" size="2"/>
+            </li>
+            <li>
+            两位数不进位加<input id="add_2_2" type="text" value="10" size="2"/>
+            </li>
+            <li>
+            两位数退位减法<input id="subc_2_2" type="text" value="10" size="2"/>
+            </li>
+            <li>
+            两位数不退位减<input id="sub_2_2" type="text" value="10" size="2"/>
+            </li>
+            <li>
+            一位数加两位数<input id="add_1_2" type="text" value="0" size="2"/>
+            </li>
+            <li>
+            两位数加一位数<input id="add_2_1" type="text" value="0" size="2"/>
+            </li>
+            <li>
+            两位数减一位数<input id="sub_2_1" type="text" value="0" size="2"/>
+            </li>
+            </ul>
+        </div>
+    </div>
+    <div id="act" align="center">
+        <div class="act" align="center">
+    	<input type="button" value="重新生成" onclick="generate()" />
+	<input type="text" value="1" id="pages" size="2"/>份
+    	<input type="button" value="打印习题" onclick="printme()" />
+<!--
+    	<input type="button" value="另存为word" onclick="saveasword()" />
+-->
+    	<input type="checkbox" id="show_answer_cb" value="answer" onclick="show_issues()"/>显示答案
+        </div>
+    </div>
+
+
+    <div id="tabdiv" align="center">
+    </div>
+</body>
+</html>
