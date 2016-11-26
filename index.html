@@ -17,7 +17,7 @@
        #act  .act{display:block; float:center;}
 
        table{ table-layout:fixed; width:720px; empty-cells:show; margin:auto auto; page-break-after:always;} 
-       td{ height:80px; text-align:"center"; align:"center"; } 
+       td{ height:80px; text-align:"left"; align:"left"; font-size:20px;font-family:"宋体", arial;} 
     </style>
 </head>
 <body>
@@ -102,6 +102,14 @@ function generate_issue(type)
 		issue.op2 = rand(0,9);
 		issue.result = issue.op1 - issue.op2;
 		break;
+        case 'mul_1_1': 
+		i = rand(1,9);
+		j = rand(1,9);
+		issue.op1 = i;
+		issue.op = ' x';
+		issue.op2 = j;
+		issue.result = issue.op1 * issue.op2;
+		break;
 	default:
 		alert("unknown type=" + type);
 	} 
@@ -138,10 +146,10 @@ function print_issue(issue, show_answer)
 {
 	var s = '<center><pre>' + ((issue.op1 < 10) ? ' ':'');
         s += issue.op1;
-        s += ' ' +  issue.op + ' ';
+        s += issue.op;
         s += ((issue.op2 < 10) ? ' ':'');
         s += issue.op2;
-        s += ' = ';
+        s += '=';
 	if (show_answer) 
 		s += issue.result;
 	s += '</pre></center>'
@@ -237,7 +245,7 @@ function generate_mode2()
 	var mode;
 	var input;
 
-	var modes = ["addc_2_2", "add_2_2", "subc_2_2", "sub_2_2", "add_2_1", "add_1_2", "sub_2_1"];
+	var modes = ["addc_2_2", "add_2_2", "subc_2_2", "sub_2_2", "add_2_1", "add_1_2", "sub_2_1", "mul_1_1"];
 
 	var issues;
 	var current_cells = new Array(CELLS_PER_PAGE);
@@ -286,7 +294,7 @@ function generate()
 	var pages = document.getElementById("pages").value;
 
 	if (isNaN(pages) || pages < 1 || pages > MAX_PAGES) {
-		alert("Invalid page copies!" + pages);
+		alert("无效的份数设置，必须是1-20之间的数字!" + pages);
 		return;
 	}
 
@@ -358,6 +366,7 @@ function saveasword()
                    <option value="add_1_2"> 一位数加两位数 </option>
                    <option value="add_2_1"> 两位数加一位数 </option>
                    <option value="sub_2_1"> 两位数减一位数 </option>
+                   <option value="mul_1_1"> 一位数乘一位数 </option>
                    </select>
             </li>
             <li>
@@ -369,6 +378,7 @@ function saveasword()
                    <option value="add_1_2"> 一位数加两位数 </option>
                    <option value="add_2_1"> 两位数加一位数 </option>
                    <option value="sub_2_1"> 两位数减一位数 </option>
+                   <option value="mul_1_1"> 一位数乘一位数 </option>
                    </select>
             </li>
             <li>
@@ -380,6 +390,7 @@ function saveasword()
                    <option value="add_1_2"> 一位数加两位数 </option>
                    <option value="add_2_1"> 两位数加一位数 </option>
                    <option value="sub_2_1"> 两位数减一位数 </option>
+                   <option value="mul_1_1"> 一位数乘一位数 </option>
                    </select>
             </li>
             <li>
@@ -391,6 +402,7 @@ function saveasword()
                    <option value="add_1_2"> 一位数加两位数 </option>
                    <option value="add_2_1"> 两位数加一位数 </option>
                    <option value="sub_2_1"> 两位数减一位数 </option>
+                   <option value="mul_1_1"> 一位数乘一位数 </option>
                    </select>
             </li>
             <li>
@@ -402,6 +414,7 @@ function saveasword()
                    <option value="add_1_2"> 一位数加两位数 </option>
                    <option value="add_2_1"> 两位数加一位数 </option>
                    <option value="sub_2_1"> 两位数减一位数 </option>
+                   <option value="mul_1_1"> 一位数乘一位数 </option>
                    </select>
             </li>
             </ul>
@@ -428,6 +441,9 @@ function saveasword()
             </li>
             <li>
             两位数减一位数<input id="sub_2_1" type="text" value="0" size="2"/>
+            </li>
+            <li>
+            一位数乘一位数<input id="mul_1_1" type="text" value="0" size="2"/>
             </li>
             </ul>
         </div>
