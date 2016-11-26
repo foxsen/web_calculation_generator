@@ -3,21 +3,21 @@
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <style>
        body,h2{margin:0;}
-       body,input,select{font-size:12px;font-family:"宋体",tahoma,arial;}
+       body,input,select{font-size:14px;font-family:"宋体",tahoma,arial;}
 
-       h2{width:500px;height:50px;margin:0 0;color:red;border:1px solid gray;}
-       h2  span{width:249px;height:50px;line-height:50px;text-align:center;float:left;}
+       h2{width:1024px;height:50px;margin:0 0;color:red;border:1px solid gray;}
+       h2  span{width:511px;height:50px;line-height:50px;text-align:center;float:left;}
 
-       ul li { float: left; width: 200px; font-size:12px; margin:0 0; padding: 0; height: 20px; list-style-type: none;}
+       ul li { float: left; width: 200px; font-size:14px; margin:0 0; padding: 0; height: 20px; list-style-type: none;}
 
        #tab  .tab{color:yellow;background-color:#999;}
-       #ct  div{width:500px;height:100px;margin:0 0;border:1px solid blue;display:none;}
+       #ct  div{width:1024px;height:100px;margin:0 0;border:1px solid blue;display:none;}
        #ct  .ct{display:block; float:center;}
-       #act  div{width:500px;height:30px;margin:0 0;border:1px solid blue;display:none;}
+       #act  div{width:1024px;height:30px;margin:0 0;border:1px solid blue;display:none;}
        #act  .act{display:block; float:center;}
 
-       table{ table-layout:fixed; width:720px; empty-cells:show; margin:auto auto; page-break-after:always;} 
-       td{ height:80px; text-align:"left"; align:"left"; font-size:20px;font-family:"宋体", arial;} 
+       table{ table-layout:fixed; width:1024px; empty-cells:show; margin:auto auto; page-break-after:always;} 
+       td{ height:110px; text-align:"left"; align:"left"; font-size:24px;font-family:"宋体", arial;} 
     </style>
 </head>
 <body>
@@ -38,6 +38,22 @@ function rand(m,n)
 		return Math.round(Math.random() * (n - m) + m);
 }
 
+var modes = [
+             ["add_1_1", "一位数加一位数"],
+             ["addc_2_2", "两位数进位加法"],
+	     ["add_2_2", "两位数不进位加"],
+	     ["subc_2_2", "两位数退位减法"],
+             ["sub_2_2", "两位数不退位减"],
+             ["add_1_2", "一位数加两位数"],
+             ["add_2_1", "两位数加一位数"],
+             ["sub_2_1", "两位数减一位数"],
+             ["mul_1_1", "一位数乘一位数"],
+             ["addmul_2_1_1", "两位数加一位数乘"],
+	     ["muladd_1_1_2", "一位数乘加两位数"],
+	     ["mulsub_1_1_2", "一位数乘减两位数"],
+	     ["submul_2_1_1", "两位数减一位数乘"] ];
+
+
 /* randomly generate one issue of give type */
 function generate_issue(type)
 {
@@ -45,70 +61,131 @@ function generate_issue(type)
 
 	var issue = new Object();
 
+	// default 1 operator
+	issue.op_n = 1;
+	issue.op = new Array();
+	issue.opr = new Array();
+
 	switch (type) {
+        case 'add_1_1': 
+		i = rand(1,9);
+		j = rand(1,9);
+		issue.opr[0] = i;
+		issue.op[0] = '+';
+		issue.opr[1] = j;
+		issue.result = issue.opr[0] + issue.opr[1];
+		break;
         case 'addc_2_2': 
 		i = rand(1,7);
 		j = rand(1,9);
-		issue.op1 = i * 10 + j;
-		issue.op = '+';
-		issue.op2 = rand(1,8 - i) * 10 + rand(10 - j, 9);
-		issue.result = issue.op1 + issue.op2;
+		issue.opr[0] = i * 10 + j;
+		issue.op[0] = '+';
+		issue.opr[1] = rand(1,8 - i) * 10 + rand(10 - j, 9);
+		issue.result = issue.opr[0] + issue.opr[1];
 		break;
 	case 'add_2_2':
 		i = rand(1,8);
 		j = rand(0,9);
-		issue.op1 = i * 10 + j;
-		issue.op = '+';
-		issue.op2 = rand(1, 9 - i) * 10 + rand(0, 9-j);
-		issue.result = issue.op1 + issue.op2;
+		issue.opr[0] = i * 10 + j;
+		issue.op[0] = '+';
+		issue.opr[1] = rand(1, 9 - i) * 10 + rand(0, 9-j);
+		issue.result = issue.opr[0] + issue.opr[1];
 		break;
 	case 'subc_2_2':
 		i = rand(2,9);
 		j = rand(0,8);
-		issue.op1 = i * 10 + j;
-		issue.op = '-';
-		issue.op2 = rand(1, i - 1) * 10 + rand(j+1, 9);
-		issue.result = issue.op1 - issue.op2;
+		issue.opr[0] = i * 10 + j;
+		issue.op[0] = '-';
+		issue.opr[1] = rand(1, i - 1) * 10 + rand(j+1, 9);
+		issue.result = issue.opr[0] - issue.opr[1];
 		break;
 	case 'sub_2_2':
 		i = rand(1,9);
 		j = rand(0,9);
-		issue.op1 = i * 10 + j;
-		issue.op = '-';
-		issue.op2 = rand(1,i) * 10 + rand(0,j);
-		issue.result = issue.op1 - issue.op2;
+		issue.opr[0] = i * 10 + j;
+		issue.op[0] = '-';
+		issue.opr[1] = rand(1,i) * 10 + rand(0,j);
+		issue.result = issue.opr[0] - issue.opr[1];
 		break;
         case 'add_2_1': 
 		i = rand(1,9);
 		j = rand(0,9);
-		issue.op1 = i * 10 + j;
-		issue.op = '+';
-		issue.op2 = (i < 9) ? rand(0,9) : rand(0, 9 - j);
-		issue.result = issue.op1 + issue.op2;
+		issue.opr[0] = i * 10 + j;
+		issue.op[0] = '+';
+		issue.opr[1] = (i < 9) ? rand(0,9) : rand(0, 9 - j);
+		issue.result = issue.opr[0] + issue.opr[1];
 		break;
         case 'add_1_2': 
 		i = rand(1,9);
 		j = rand(1,9);
-		issue.op1 = i;
-		issue.op = '+';
-		issue.op2 = (j == 9) ? j*10 + rand(0,9 - i) : j * 10 + rand(0, 9);
-		issue.result = issue.op1 + issue.op2;
+		issue.opr[0] = i;
+		issue.op[0] = '+';
+		issue.opr[1] = (j == 9) ? j*10 + rand(0,9 - i) : j * 10 + rand(0, 9);
+		issue.result = issue.opr[0] + issue.opr[1];
 		break;
         case 'sub_2_1': 
 		i = rand(1,9);
 		j = rand(0,9);
-		issue.op1 = i*10 + j;
-		issue.op = '-';
-		issue.op2 = rand(0,9);
-		issue.result = issue.op1 - issue.op2;
+		issue.opr[0] = i*10 + j;
+		issue.op[0] = '-';
+		issue.opr[1] = rand(0,9);
+		issue.result = issue.opr[0] - issue.opr[1];
 		break;
         case 'mul_1_1': 
 		i = rand(1,9);
 		j = rand(1,9);
-		issue.op1 = i;
-		issue.op = ' x';
-		issue.op2 = j;
-		issue.result = issue.op1 * issue.op2;
+		issue.opr[0] = i;
+		issue.op[0] = 'x';
+		issue.opr[1] = j;
+		issue.result = issue.opr[0] * issue.opr[1];
+		break;
+	case 'addmul_2_1_1':
+		i = rand(1,99);
+		j = rand(1,9);
+		k = rand(1,9);
+		issue.op_n = 2;
+		issue.opr[0] = i;
+		issue.op[0] = '+';
+		issue.opr[1] = j;
+		issue.op[1] = 'x';
+		issue.opr[2] = k;
+		issue.result = issue.opr[0] + issue.opr[1] * issue.opr[2];
+		break;
+	case 'submul_2_1_1':
+		j = rand(1,9);
+		k = rand(1,9);
+		i = rand(j*k,100);
+		issue.op_n = 2;
+		issue.opr[0] = i;
+		issue.op[0] = '-';
+		issue.opr[1] = j;
+		issue.op[1] = 'x';
+		issue.opr[2] = k;
+		issue.result = issue.opr[0] - issue.opr[1] * issue.opr[2];
+		break;
+	case 'muladd_1_1_2':
+		i = rand(1,9);
+		j = rand(1,9);
+		k = rand(1,99);
+		issue.op_n = 2;
+		issue.opr[0] = i;
+		issue.op[0] = 'x';
+		issue.opr[1] = j;
+		issue.op[1] = '+';
+		issue.opr[2] = k;
+		issue.result = issue.opr[0] * issue.opr[1] + issue.opr[2];
+		break;
+	case 'mulsub_1_1_2':
+		i = rand(4,9);
+		j = rand(4,9);
+		k = rand(1,i*j);
+		issue.op_n = 2;
+		issue.opr[0] = i;
+		issue.op[0] = 'x';
+		issue.opr[1] = j;
+		issue.op[1] = '-';
+		issue.opr[2] = k;
+		issue.result = issue.opr[0] * issue.opr[1] - issue.opr[2];
 		break;
 	default:
 		alert("unknown type=" + type);
@@ -144,11 +221,14 @@ var total_pages = 0;
 
 function print_issue(issue, show_answer)
 {
-	var s = '<center><pre>' + ((issue.op1 < 10) ? ' ':'');
-        s += issue.op1;
-        s += issue.op;
-        s += ((issue.op2 < 10) ? ' ':'');
-        s += issue.op2;
+	var s = '<center><pre>';
+        s += issue.opr[0];
+        s += issue.op[0];
+        s += issue.opr[1];
+	if (issue.op_n == 2) {
+		s += issue.op[1];
+        	s += issue.opr[2];
+	}
         s += '=';
 	if (show_answer) 
 		s += issue.result;
@@ -245,7 +325,6 @@ function generate_mode2()
 	var mode;
 	var input;
 
-	var modes = ["addc_2_2", "add_2_2", "subc_2_2", "sub_2_2", "add_2_1", "add_1_2", "sub_2_1", "mul_1_1"];
 
 	var issues;
 	var current_cells = new Array(CELLS_PER_PAGE);
@@ -254,7 +333,7 @@ function generate_mode2()
 	var total = 0;
 
 	for (i = 0; i < modes.length; i++ ) {
-		input = document.getElementById(modes[i]);
+		input = document.getElementById(modes[i][0]);
 		if (input) 
 			n[i] = parseInt(input.value);
 		else
@@ -271,7 +350,7 @@ function generate_mode2()
 		k = 0;
 		for (i = 0; i < modes.length; i++ ) {
 			if (n[i] > 0) {
-				issues = generate_issues(modes[i], n[i]);
+				issues = generate_issues(modes[i][0], n[i]);
 				for (j = 0; j < n[i]; j++) {
 					current_cells[k] = issues[j]; 
 					k++;
@@ -329,8 +408,32 @@ function tab(){
     }
 }
 
+/* fill in the mode lists */
+function create_options()
+{
+    var i, j;
+    var select, select_html;
+ 
+    var list, li;
+
+    for (i = 1; i < 6; i++) {
+	select = document.getElementById("col" + i + "type");
+        for (j = 0; j < modes.length; j++ ) 
+	    select.options.add(new Option(modes[j][1], modes[j][0]));
+    }
+
+    list = document.getElementById("mode_option_list");
+    for (i = 0; i < modes.length; i++ )  {
+        li = document.createElement("li");
+        li.innerHTML = '<li>' + modes[i][1] + '<input id="' + 
+                       modes[i][0] +'" type="text" value="0" size="2"/> </li>';
+        list.appendChild(li);
+    }
+}
+
 window.onload=function (){
     changetab();
+    create_options();
     generate();
 }
 
@@ -359,92 +462,28 @@ function saveasword()
           <ul>
             <li>
             第1列: <select id="col1type">
-                   <option value="addc_2_2"> 两位数进位加法 </option>
-                   <option value="add_2_2"> 两位数不进位加 </option>
-                   <option value="subc_2_2"> 两位数退位减法 </option>
-                   <option value="sub_2_2"> 两位数不退位减 </option>
-                   <option value="add_1_2"> 一位数加两位数 </option>
-                   <option value="add_2_1"> 两位数加一位数 </option>
-                   <option value="sub_2_1"> 两位数减一位数 </option>
-                   <option value="mul_1_1"> 一位数乘一位数 </option>
                    </select>
             </li>
             <li>
             第2列: <select id="col2type">
-                   <option value="addc_2_2"> 两位数进位加法 </option>
-                   <option value="add_2_2"> 两位数不进位加 </option>
-                   <option value="subc_2_2"> 两位数退位减法 </option>
-                   <option value="sub_2_2"> 两位数不退位减 </option>
-                   <option value="add_1_2"> 一位数加两位数 </option>
-                   <option value="add_2_1"> 两位数加一位数 </option>
-                   <option value="sub_2_1"> 两位数减一位数 </option>
-                   <option value="mul_1_1"> 一位数乘一位数 </option>
                    </select>
             </li>
             <li>
             第3列: <select id="col3type">
-                   <option value="addc_2_2"> 两位数进位加法 </option>
-                   <option value="add_2_2"> 两位数不进位加 </option>
-                   <option value="subc_2_2"> 两位数退位减法 </option>
-                   <option value="sub_2_2"> 两位数不退位减 </option>
-                   <option value="add_1_2"> 一位数加两位数 </option>
-                   <option value="add_2_1"> 两位数加一位数 </option>
-                   <option value="sub_2_1"> 两位数减一位数 </option>
-                   <option value="mul_1_1"> 一位数乘一位数 </option>
                    </select>
             </li>
             <li>
             第4列: <select id="col4type">
-                   <option value="addc_2_2"> 两位数进位加法 </option>
-                   <option value="add_2_2"> 两位数不进位加 </option>
-                   <option value="subc_2_2"> 两位数退位减法 </option>
-                   <option value="sub_2_2"> 两位数不退位减 </option>
-                   <option value="add_1_2"> 一位数加两位数 </option>
-                   <option value="add_2_1"> 两位数加一位数 </option>
-                   <option value="sub_2_1"> 两位数减一位数 </option>
-                   <option value="mul_1_1"> 一位数乘一位数 </option>
                    </select>
             </li>
             <li>
             第5列: <select id="col5type">
-                   <option value="addc_2_2"> 两位数进位加法 </option>
-                   <option value="add_2_2"> 两位数不进位加 </option>
-                   <option value="subc_2_2"> 两位数退位减法 </option>
-                   <option value="sub_2_2"> 两位数不退位减 </option>
-                   <option value="add_1_2"> 一位数加两位数 </option>
-                   <option value="add_2_1"> 两位数加一位数 </option>
-                   <option value="sub_2_1"> 两位数减一位数 </option>
-                   <option value="mul_1_1"> 一位数乘一位数 </option>
                    </select>
             </li>
             </ul>
         </div>
         <div>
-	    <ul>
-            <li>
-            两位数进位加法<input id="addc_2_2" type="text" value="20" size="2"/>
-            </li>
-            <li>
-            两位数不进位加<input id="add_2_2" type="text" value="10" size="2"/>
-            </li>
-            <li>
-            两位数退位减法<input id="subc_2_2" type="text" value="10" size="2"/>
-            </li>
-            <li>
-            两位数不退位减<input id="sub_2_2" type="text" value="10" size="2"/>
-            </li>
-            <li>
-            一位数加两位数<input id="add_1_2" type="text" value="0" size="2"/>
-            </li>
-            <li>
-            两位数加一位数<input id="add_2_1" type="text" value="0" size="2"/>
-            </li>
-            <li>
-            两位数减一位数<input id="sub_2_1" type="text" value="0" size="2"/>
-            </li>
-            <li>
-            一位数乘一位数<input id="mul_1_1" type="text" value="0" size="2"/>
-            </li>
+	    <ul id="mode_option_list">
             </ul>
         </div>
     </div>
