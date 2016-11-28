@@ -2,31 +2,37 @@
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <style>
-       body,h2{margin:0;}
-       body,input,select{font-size:14px;font-family:"宋体",tahoma,arial;}
+       body,h2 { margin:0;}
+       body,input,select { font-size:14px;font-family:"宋体",tahoma,arial;}
 
-       h2{width:1024px;height:50px;margin:0 0;color:red;border:1px solid gray;}
-       h2  span{width:511px;height:50px;line-height:50px;text-align:center;float:left;}
+       h2 { width:1024px;height:50px;margin:0 0;color:red;border:1px solid gray;}
+       h2 span { width:511px;height:50px;line-height:50px;text-align:center;float:left;}
 
        ul li { float: left; width: 200px; font-size:14px; margin:0 0; padding: 0; height: 20px; list-style-type: none;}
 
-       #tab  .tab{color:yellow;background-color:#999;}
-       #ct  div{width:1024px;height:100px;margin:0 0;border:1px solid blue;display:none;}
-       #ct  .ct{display:block; float:center;}
-       #act  div{width:1024px;height:30px;margin:0 0;border:1px solid blue;display:none;}
-       #act  .act{display:block; float:center;}
+       #tab .tab { color:yellow;background-color:#999;}
+       #ct div { width:1024px;height:100px;margin:0 0;border:1px solid blue;display:none;}
+       #ct .ct { display:block; float:center;}
+       #act div { width:1024px;height:30px;margin:0 0;border:1px solid blue;display:none;}
+       #act .act { display:block; float:center;}
 
-       table{ table-layout:fixed; width:1024px; empty-cells:show; margin:auto auto; page-break-after:always;} 
-       td{ height:110px; text-align:"left"; align:"left"; font-size:24px;font-family:"宋体", arial;} 
+       table { table-layout:fixed; width:1024px; empty-cells:show; margin:auto auto; page-break-after:always;} 
+       td { height:80px; width="200px" text-align:"left"; align:"left"; font-size:24px;font-family:"宋体", arial;} 
+
+       @page print_section {
+          size: 210mm 297mm;
+          margin: 27mm 16mm 27mm 16mm;
+       }
+       div.print_section {
+          page:print_section;
+       }
     </style>
 </head>
 <body>
 <script type="text/javascript" src="js/jquery.min.js"></script>
 <script type="text/javascript" src="js/jQuery.print.js"></script>                
-<!-- 
 <script type="text/javascript" src="js/jquery.base64.js"></script>                
 <script type="text/javascript" src="js/tableExport.js"></script>                
--->
 <script type="text/javascript">
 
 /* Generate integer that in [m,n], if m > n return 0 */
@@ -217,10 +223,10 @@ var current_mode = 0;
 /* how many page generated, user can choose between 1-MAX_PAGES */
 var old_total_pages = 0;
 var total_pages = 0;
-
+   
 function print_issue(issue, show_answer)
 {
-    var s = '<center><pre>';
+    var s = '<td> ';
     s += issue.opr[0];
     s += issue.op[0];
     s += issue.opr[1];
@@ -231,8 +237,8 @@ function print_issue(issue, show_answer)
     s += '=';
     if (show_answer) 
         s += issue.result;
-    s += '</pre></center>'
-        return s;
+    s += '</td>'
+    return s;
 }
 
 function create_table(p)
@@ -240,14 +246,12 @@ function create_table(p)
     var tab;
 
     tab = document.createElement("table");
-    tab.innerHTML = '<table class="table" align="center">';
+    tab.innerHTML = '<table class="table"></table>' ;
     tab.setAttribute("id", "mytab" + p);
-    for (var r=0; r < 12; r++) {
+    for (var r=0; r < 11; r++) {
         tr = tab.insertRow(r);
         if (r == 0) { 
-            tr.innerHTML = '<tr> <td align="center" colspan="5"> <h1> 口算练习题 </h1> </td> </tr>';
-        } else if ( r == 1) {
-            tr.innerHTML = ' <tr> <td></td> \
+            tr.innerHTML = '<tr> <td></td> \
                            <td colspan="1" align="center">姓名：</td> \
                            <td colspan="1" align="center">班级：</td> \
                            <td colspan="1" align="center">时间：</td> \
@@ -279,7 +283,7 @@ function show_issues()
         }
 
         for (r = 0; r < 10; r ++) {
-            tr = tab.rows[r + 2];
+            tr = tab.rows[r + 1];
             for (c = 0; c < 5; c ++) {
                 td = tr.cells[c];
                 td.innerHTML = print_issue(cells[p*CELLS_PER_PAGE + c*10 + r], show_answer);
@@ -291,8 +295,10 @@ function show_issues()
         var d = document.getElementById("tabdiv");
         for (p = old_total_pages - 1; p >= total_pages; p --) {
             tab = document.getElementById("mytab" + p);
-            if (tab) 
+            if (tab) { 
                 d.removeChild(tab);
+                delete tab;
+            }
         }
     }
     old_total_pages = total_pages;
@@ -438,12 +444,10 @@ function printme()
     $("#tabdiv").print();
 }
 
-/*
 function saveasword()
 {
-    $("#mytab").tableExport({type:'doc',escape:'false'});
+    $("table").tableExport({type:'doc',escape:'false', excelstyles:['height','width','text-align','font-size','align']});
 }
-*/
 
 </script>
 
@@ -486,15 +490,13 @@ function saveasword()
         <input type="button" value="重新生成" onclick="generate()" />
     <input type="text" value="1" id="pages" size="2"/>份
         <input type="button" value="打印习题" onclick="printme()" />
-<!--
         <input type="button" value="另存为word" onclick="saveasword()" />
--->
         <input type="checkbox" id="show_answer_cb" value="answer" onclick="show_issues()"/>显示答案
         </div>
     </div>
 
 
-    <div id="tabdiv" align="center">
+    <div id="tabdiv" class="print_section" align="center">
     </div>
 </body>
 </html>
