@@ -17,7 +17,7 @@
        #act .act { display:block; float:center;}
 
        table { table-layout:fixed; width:1024px; empty-cells:show; margin:auto auto; page-break-after:always;} 
-       td { height:80px; width="200px" text-align:"left"; align:"left"; font-size:24px;font-family:"宋体", arial;} 
+       td { height:80px; width:200px; text-align:"left"; align:"left"; font-size:24px;font-family:"宋体", arial;} 
 
        @page print_section {
           size: 210mm 297mm;
@@ -32,6 +32,9 @@
 <script type="text/javascript" src="js/jquery.min.js"></script>
 <script type="text/javascript" src="js/jQuery.print.js"></script>                
 <script type="text/javascript" src="js/jquery.base64.js"></script>                
+<script type="text/javascript" src="js/libs/FileSaver/FileSaver.min.js"></script>
+<script type="text/javascript" src="js/libs/jsPDF/jspdf.min.js"></script>
+<script type="text/javascript" src="js/libs/jsPDF-AutoTable/jspdf.plugin.autotable.js"></script>
 <script type="text/javascript" src="js/tableExport.js"></script>                
 <script type="text/javascript">
 
@@ -57,7 +60,31 @@ var modes = [
              ["addmul_2_1_1", "两位数加一位数乘"],
              ["muladd_1_1_2", "一位数乘加两位数"],
              ["mulsub_1_1_2", "一位数乘减两位数"],
-             ["submul_2_1_1", "两位数减一位数乘"] ];
+             ["submul_2_1_1", "两位数减一位数乘"],
+             ["sub9", "减数个位为9"],
+             ["sub012", "减数个位为012"],
+             ["add012", "加数个位为012"],
+             ["addn_2_2", "特殊非进位加"],
+             ["wrong", "历史错题"],
+             ];
+
+var wrong_issues = [
+    [1,46,'-',31,15],
+    [1,43,'+',40,83],
+    [1,27,'+',30,57],
+    [1,49,'+',30,79],
+    [1,56,'-',21,35],
+    [1,97,'-',59,38],
+    [2,6,'x',5,'-',29,1],
+    [1,76,'-',59,17],
+    [2,8,'x',6,'-',12,36],
+    [2,45,'+',2,'x',6,57],
+    [2,42,'+',2,'x',3,48],
+    [1,63,'+',10,73],
+    [1,62,'+',16,78]
+    ];
+
+var current_wrong = 0;
 
 /* randomly generate one issue of give type */
 function generate_issue(type)
@@ -191,6 +218,72 @@ function generate_issue(type)
             issue.op[1] = '-';
             issue.opr[2] = k;
             issue.result = issue.opr[0] * issue.opr[1] - issue.opr[2];
+            break;
+        case 'sub9':
+            j = rand(1,8);
+            i = rand(j+1,9);
+            issue.opr[0] = i * 10 + rand(0,9);
+            issue.op[0] = '-';
+            issue.opr[1] = j * 10 + 9;
+            issue.result = issue.opr[0] - issue.opr[1];
+            break;
+        case 'sub012':
+            i = rand(2,9);
+            j = rand(0,2);
+            issue.opr[0] = i * 10 + rand(5,9);
+            issue.op[0] = '-';
+            issue.opr[1] = rand(0,i-1) * 10 + j;
+            issue.result = issue.opr[0] - issue.opr[1];
+            break;
+        case 'add012':
+            i = rand(1,8);
+            j = rand(1,9 - i);
+            k = rand(0,2);
+            issue.opr[0] = i * 10 + rand(0,9 - k);
+            issue.op[0] = '+';
+            issue.opr[1] = j * 10 + k;
+            issue.result = issue.opr[0] + issue.opr[1];
+            break;
+        case 'mix_2_1':
+            i = rand(0,4) * 2;
+            j = (i + 10) / 2;
+            issue.opr[0] = j * 10 + i;
+            issue.op[0] = '+';
+            issue.opr[1] = rand(1,(9-j)) * 10 + j;
+            issue.result = issue.opr[0] + issue.opr[1];
+            break;
+        case 'addn_2_2':
+            /* add with no carry but at least a[2] + b[1] >= 10 
+               or a[1] + b[2] >= 10 to test whether it will confuse her*/
+            do {
+                i = rand(1,8);
+                j = rand(0,9);
+                k = rand(0, 9-j);
+                l = rand(1, 9-i);
+            } while (i + k < 10 && j + l < 10);
+            issue.opr[0] = i * 10 + j;
+            issue.op[0] = '+';
+            issue.opr[1] = l * 10 + k;
+            issue.result = issue.opr[0] + issue.opr[1];
+            break;
+        case 'wrong':
+            i = current_wrong;
+            j = 0;
+            /* op number */
+            k = wrong_issues[i][j++];
+            issue.op_n = k;
+            issue.opr[0] = wrong_issues[i][j++];
+            issue.op[0] = wrong_issues[i][j++];
+            issue.opr[1] = wrong_issues[i][j++];
+            if (k == 2) {
+              issue.op[1] = wrong_issues[i][j++];
+              issue.opr[2] = wrong_issues[i][j++];
+            }
+            issue.result = wrong_issues[i][j];
+            current_wrong ++;
+            if (current_wrong == wrong_issues.length) {
+              current_wrong = 0;
+            }
             break;
         default:
             alert("unknown type=" + type);
@@ -446,7 +539,16 @@ function printme()
 
 function saveasword()
 {
-    $("table").tableExport({type:'doc',escape:'false', excelstyles:['height','width','text-align','font-size','align']});
+    $("table").tableExport({type:'doc',escape:'false', fileName:'issues',
+            excelstyles:['height','width','text-align','font-size','align']
+            });
+}
+
+function saveaspdf()
+{
+    $("table").tableExport({type:'pdf',
+            fileName:'issues',
+            });
 }
 
 </script>
@@ -491,6 +593,7 @@ function saveasword()
     <input type="text" value="1" id="pages" size="2"/>份
         <input type="button" value="打印习题" onclick="printme()" />
         <input type="button" value="另存为word" onclick="saveasword()" />
+        <input type="button" value="另存为pdf" onclick="saveaspdf()" />
         <input type="checkbox" id="show_answer_cb" value="answer" onclick="show_issues()"/>显示答案
         </div>
     </div>

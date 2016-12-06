@@ -26,10 +26,10 @@
         jspdf: {orientation: 'p',
                 unit: 'pt',
                 format: 'a4', // jspdf page format or 'bestfit' for autmatic paper format selection
-                margins: {left: 20, right: 10, top: 10, bottom: 10},
-                autotable: {styles: {cellPadding: 2,
-                                     rowHeight: 12,
-                                     fontSize: 8,
+                margins: {left: 40, right: 0, top: 0, bottom: 10},
+                autotable: {styles: {cellPadding: 0,
+                                     rowHeight: 60,
+                                     fontSize: 18,
                                      fillColor: 255,        // color value or 'inherit' to use css background-color from html table
                                      textColor: 50,         // color value or 'inherit' to use css color from html table
                                      fontStyle: 'normal',   // normal, bold, italic, bolditalic or 'inherit' to use css font-weight and fonst-style from html table
@@ -42,7 +42,7 @@
                                            fontStyle: 'bold',
                                            halign: 'center'
                                           },
-                            alternateRowStyles: {fillColor: 245
+                            alternateRowStyles: {fillColor: 255 //245
                                                 },
                             tableExport: {onAfterAutotable: null,
                                           onBeforeAutotable: null,
@@ -755,11 +755,13 @@
             teOptions.images = {};
 
           if (typeof teOptions.images != 'undefined') {
-            $(el).filter(function() {
-              return $(this).data("tableexport-display") != 'none' &&
-                     ($(this).is(':visible') ||
-                      $(this).data("tableexport-display") == 'always');
-            }).each(function () {
+              var $tables = $(el).filter(function() {
+                      return $(this).data("tableexport-display") != 'none' &&
+                      ($(this).is(':visible') ||
+                       $(this).data("tableexport-display") == 'always');
+                      });
+
+              $tables.each(function(){
               var rowCount = 0;
 
               $hrows = $(this).find('thead').find(defaults.theadSelector);
