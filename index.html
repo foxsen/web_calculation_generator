@@ -5,37 +5,47 @@
        body,h2 { margin:0;}
        body,input,select { font-size:14px;font-family:"宋体",tahoma,arial;}
 
-       h2 { width:1024px;height:50px;margin:0 0;color:red;border:1px solid gray;}
-       h2 span { width:511px;height:50px;line-height:50px;text-align:center;float:left;}
+       h2 { width:750px;height:50px;margin:0 0;color:red;border:1px solid gray;}
+       h2 span { width:374px;height:50px;line-height:50px;text-align:center;float:left;}
 
-       ul li { float: left; width: 200px; font-size:14px; margin:0 0; padding: 0; height: 20px; list-style-type: none;}
+       ul li.colmode { float:left; width:200px; font-size:14px; margin:0 0; padding: 0; height: 20px; list-style-type: none;}
+       ul li { float:left; width:150px; font-size:14px; margin:0 0; padding: 0; height: 20px; list-style-type: none;}
 
        #tab .tab { color:yellow;background-color:#999;}
-       #ct div { width:1024px;height:100px;margin:0 0;border:1px solid blue;display:none;}
+       #ct div { width:750px;height:120px;margin:0 0;border:1px solid blue;display:none;}
        #ct .ct { display:block; float:center;}
-       #act div { width:1024px;height:30px;margin:0 0;border:1px solid blue;display:none;}
+       #act div { width:750px;height:30px;margin:0 0;border:1px solid blue;display:none;}
        #act .act { display:block; float:center;}
 
-       table { table-layout:fixed; width:1024px; empty-cells:show; margin:auto auto; page-break-after:always;} 
-       td { height:80px; width:200px; text-align:"left"; align:"left"; font-size:24px;font-family:"宋体", arial;} 
+       table { table-layout:fixed; empty-cells:show; margin:auto auto; page-break-after:always;} 
+       td { height:80px; width:150px;text-align:"left";align:"left";font-size:24px;font-family:"宋体", arial;} 
 
-       @page print_section {
-          size: 210mm 297mm;
-          margin: 27mm 16mm 27mm 16mm;
-       }
-       div.print_section {
-          page:print_section;
+       @media print {
+         @page print_section {
+            size: 210mm 297mm;
+            margin: 10mm 10mm 5mm 5mm;
+         }
+         div.print_section {
+            page:print_section;
+         }
        }
     </style>
 </head>
 <body>
+
 <script type="text/javascript" src="js/jquery.min.js"></script>
 <script type="text/javascript" src="js/jQuery.print.js"></script>                
 <script type="text/javascript" src="js/jquery.base64.js"></script>                
 <script type="text/javascript" src="js/libs/FileSaver/FileSaver.min.js"></script>
+<!---
 <script type="text/javascript" src="js/libs/jsPDF/jspdf.min.js"></script>
 <script type="text/javascript" src="js/libs/jsPDF-AutoTable/jspdf.plugin.autotable.js"></script>
+<script type="text/javascript" src="js/pdfmake/pdfmake.js"></script>
+<script type="text/javascript" src="js/pdfmake/vfs_fonts.js"></script>
+---!>
 <script type="text/javascript" src="js/tableExport.js"></script>                
+
+
 <script type="text/javascript">
 
 /* Generate integer that in [m,n], if m > n return 0 */
@@ -520,7 +530,7 @@ function create_options()
     list = document.getElementById("mode_option_list");
     for (i = 0; i < modes.length; i++ )  {
         li = document.createElement("li");
-        li.innerHTML = '<li>' + modes[i][1] + '<input id="' + 
+        li.innerHTML = '<li class="mixmode">' + modes[i][1] + '<input id="' + 
             modes[i][0] +'" type="text" value="0" size="2"/> </li>';
         list.appendChild(li);
     }
@@ -539,16 +549,12 @@ function printme()
 
 function saveasword()
 {
-    $("table").tableExport({type:'doc',escape:'false', fileName:'issues',
-            excelstyles:['height','width','text-align','font-size','align']
-            });
+    $("table").tableExport({type:'doc',escape:'false', excelstyles:['height','width','text-align','font-size','align']});
 }
 
 function saveaspdf()
 {
-    $("table").tableExport({type:'pdf',
-            fileName:'issues',
-            });
+    $("table").tableExport({type:'pdf', fileName:'issues', pdfmake:{enabled:true}});
 }
 
 </script>
@@ -561,23 +567,23 @@ function saveaspdf()
     <div id="ct" align="center">
         <div class="ct">
           <ul>
-            <li>
+            <li class="colmode">
             第1列: <select id="col1type">
                    </select>
             </li>
-            <li>
+            <li class="colmode">
             第2列: <select id="col2type">
                    </select>
             </li>
-            <li>
+            <li class="colmode">
             第3列: <select id="col3type">
                    </select>
             </li>
-            <li>
+            <li class="colmode">
             第4列: <select id="col4type">
                    </select>
             </li>
-            <li>
+            <li class="colmode">
             第5列: <select id="col5type">
                    </select>
             </li>
@@ -593,13 +599,15 @@ function saveaspdf()
     <input type="text" value="1" id="pages" size="2"/>份
         <input type="button" value="打印习题" onclick="printme()" />
         <input type="button" value="另存为word" onclick="saveasword()" />
+<!---
         <input type="button" value="另存为pdf" onclick="saveaspdf()" />
+---!>
         <input type="checkbox" id="show_answer_cb" value="answer" onclick="show_issues()"/>显示答案
         </div>
     </div>
 
 
-    <div id="tabdiv" class="print_section" align="center">
+    <div id="tabdiv" class="print_section" align="center" width="100%">
     </div>
 </body>
 </html>
